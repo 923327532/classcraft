@@ -9,7 +9,7 @@ class CreateClasesTable extends Migration
     public function up()
     {
         Schema::create('clases', function (Blueprint $table) {
-            $table->string('id_clase')->primary();
+            $table->id('id_clase'); // autoincremental y clave primaria
             $table->string('nombre_clase');
             $table->integer('nivel')->default(1);
             $table->unsignedBigInteger('id_maestro');

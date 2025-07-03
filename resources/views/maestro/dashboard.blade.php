@@ -2,7 +2,7 @@
     <div class="flex h-screen bg-gray-100">
         <div id="sidebar" class="w-16 bg-black shadow-lg flex flex-col py-4 h-screen">
             <nav class="flex-1 px-2 space-y-4">
-                <a href="{{ route('clases.index') }}" class="group flex flex-col items-center p-2 rounded-lg text-gray-50 hover:bg-gray-700 hover:text-white transition-colors duration-200 w-full">
+                <a href="{{ route('maestro.dashboard') }}#" class="group flex flex-col items-center p-2 rounded-lg text-gray-50 hover:bg-gray-700 hover:text-white transition-colors duration-200 w-full">
                     <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
                     <span class="text-xs font-medium">Mis clases</span>
                 </a>
@@ -99,203 +99,177 @@
             </main>
         </div>
     </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const createClassButton = document.getElementById('createClassButton');
+    const initialWelcomeBox = document.getElementById('initial-welcome-box');
+    const createClassFormContainer = document.getElementById('create-class-form-container');
+    const cancelCreateClassButton = document.getElementById('cancelCreateClass');
+    const createClassForm = document.getElementById('create-class-form');
+    const classCardsContainer = document.getElementById('class-cards-container');
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const createClassButton = document.getElementById('createClassButton');
-            const initialWelcomeBox = document.getElementById('initial-welcome-box');
-            const createClassFormContainer = document.getElementById('create-class-form-container');
-            const cancelCreateClassButton = document.getElementById('cancelCreateClass');
-            const createClassForm = document.getElementById('create-class-form');
-            const classCardsContainer = document.getElementById('class-cards-container');
+    // Renderiza una tarjeta de clase en el contenedor
+    function renderClassCard(clase) {
+        const classCard = document.createElement('div');
+        classCard.className = 'group bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-200 hover:border-blue-300 transform hover:-translate-y-1 overflow-hidden relative';
+        classCard.setAttribute('data-class-id', clase.id_clase);
 
-            function renderClassCard(clase) {
-                const classCard = document.createElement('div');
-                classCard.className = 'group bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-200 hover:border-blue-300 transform hover:-translate-y-1 overflow-hidden relative';
-                classCard.setAttribute('data-class-id', clase.id_clase);
+        const formattedFechaInicio = new Date(clase.fecha_inicio).toISOString().split('T')[0];
+        const formattedFechaFin = new Date(clase.fecha_fin).toISOString().split('T')[0];
 
-                const formattedFechaInicio = new Date(clase.fecha_inicio).toISOString().split('T')[0];
-                const formattedFechaFin = new Date(clase.fecha_fin).toISOString().split('T')[0];
-
-                classCard.innerHTML = `
-                    <div class="p-6">
-                        <div class="mb-4">
-                            <h4 class="text-xl font-bold text-gray-800 group-hover:text-blue-600 transition-colors duration-200">${clase.nombre_clase}</h4>
-                        </div>
-                        
-                        <div class="bg-gray-50 rounded-lg p-4 mb-4">
-                            <div class="grid grid-cols-2 gap-4">
-                                <div class="flex items-center space-x-2">
-                                    <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
-                                    </svg>
-                                    <div>
-                                        <p class="text-xs text-gray-500">Inicio</p>
-                                        <p class="text-sm font-semibold text-gray-700">${formattedFechaInicio}</p>
-                                    </div>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
-                                    </svg>
-                                    <div>
-                                        <p class="text-xs text-gray-500">Fin</p>
-                                        <p class="text-sm font-semibold text-gray-700">${formattedFechaFin}</p>
-                                    </div>
-                                </div>
+        classCard.innerHTML = `
+            <div class="p-6">
+                <div class="mb-4">
+                    <h4 class="text-xl font-bold text-gray-800 group-hover:text-blue-600 transition-colors duration-200">${clase.nombre_clase}</h4>
+                </div>
+                
+                <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="flex items-center space-x-2">
+                            <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+                            </svg>
+                            <div>
+                                <p class="text-xs text-gray-500">Inicio</p>
+                                <p class="text-sm font-semibold text-gray-700">${formattedFechaInicio}</p>
                             </div>
                         </div>
-                        
-                            <button type="button" onclick="window.location.href='{{ url('maestro/asignar-alumno') }}/${clase.id_clase}'" class="px-3 py-2 text-sm bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg hover:from-blue-100 hover:to-blue-200 hover:shadow-md hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all duration-200 font-medium text-gray-700 cursor-pointer active:scale-95">
-                                Asignar Alumnos
-                            </button>
-                            
-                            <button type="button" class="delete-class-btn px-3 py-2 text-sm bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-lg hover:from-red-100 hover:to-red-200 hover:shadow-md hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-red-300 transition-all duration-200 font-medium text-gray-700 cursor-pointer active:scale-95" data-id="${clase.id_clase}">
-                                Eliminar Clase
-                            </button>
+                        <div class="flex items-center space-x-2">
+                            <svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+                            </svg>
+                            <div>
+                                <p class="text-xs text-gray-500">Fin</p>
+                                <p class="text-sm font-semibold text-gray-700">${formattedFechaFin}</p>
+                            </div>
                         </div>
                     </div>
-                `;
-                classCardsContainer.prepend(classCard);
-            }
+                </div>
+                
+                <button type="button" class="assign-students-btn px-3 py-2 text-sm bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg hover:from-blue-100 hover:to-blue-200 hover:shadow-md hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all duration-200 font-medium text-gray-700 cursor-pointer active:scale-95" data-id="${clase.id_clase}">
+                    Asignar Alumnos
+                </button>
+                
+                <button type="button" class="delete-class-btn px-3 py-2 text-sm bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-lg hover:from-red-100 hover:to-red-200 hover:shadow-md hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-red-300 transition-all duration-200 font-medium text-gray-700 cursor-pointer active:scale-95" data-id="${clase.id_clase}">
+                    Eliminar Clase
+                </button>
+            </div>
+        `;
 
-            async function loadClasses() {
-                try {
-                    const response = await fetch('{{ route('clases.index') }}', {
-                        method: 'GET',
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        }
-                    });
-                    const clases = await response.json();
-                    if (clases.length > 0) {
-                        initialWelcomeBox.classList.add('hidden');
-                    }
-                    clases.forEach(clase => renderClassCard(clase));
-                } catch (error) {
-                    console.error('Error al cargar las clases:', error);
+        classCardsContainer.prepend(classCard);
+    }
+
+    // Carga las clases desde el backend
+    async function loadClasses() {
+        try {
+            const response = await fetch('{{ route('clases.index') }}', {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 }
+            });
+            const clases = await response.json();
+            if (clases.length > 0) {
+                initialWelcomeBox.classList.add('hidden');
             }
-            loadClasses();
+            clases.forEach(clase => renderClassCard(clase));
+        } catch (error) {
+            console.error('Error al cargar las clases:', error);
+        }
+    }
+    loadClasses();
 
-            createClassButton.addEventListener('click', function(e) {
-                e.preventDefault();
-                createClassFormContainer.classList.remove('hidden');
-                createClassFormContainer.scrollIntoView({ behavior: 'smooth' });
+    // Mostrar formulario para crear clase
+    createClassButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        createClassFormContainer.classList.remove('hidden');
+        createClassFormContainer.scrollIntoView({ behavior: 'smooth' });
+    });
+
+    // Cancelar creación de clase
+    cancelCreateClassButton.addEventListener('click', function() {
+        createClassFormContainer.classList.add('hidden');
+        createClassForm.reset();
+    });
+
+    // Crear nueva clase
+    createClassForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const nombreClase = document.getElementById('nombre_clase').value;
+        const fechaInicio = document.getElementById('fecha_inicio').value;
+        const fechaFin = document.getElementById('fecha_fin').value;
+
+        try {
+            const response = await fetch('{{ route('clases.store') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    nombre_clase: nombreClase,
+                    fecha_inicio: fechaInicio,
+                    fecha_fin: fechaFin
+                })
             });
 
-            cancelCreateClassButton.addEventListener('click', function() {
+            if (response.ok) {
+                const nuevaClase = await response.json();
+                renderClassCard(nuevaClase);
                 createClassFormContainer.classList.add('hidden');
                 createClassForm.reset();
-            });
+                initialWelcomeBox.classList.add('hidden');
+            } else {
+                const errorData = await response.json();
+                console.error('Error al guardar la clase:', errorData);
+                alert('Error al guardar la clase: ' + (errorData.message || 'Error desconocido'));
+            }
+        } catch (error) {
+            console.error('Error de red al guardar la clase:', error);
+            alert('Error de red al guardar la clase.');
+        }
+    });
 
-            createClassForm.addEventListener('submit', async function(e) {
-                e.preventDefault();
+    // Manejo de botones dentro de las tarjetas de clase
+    classCardsContainer.addEventListener('click', async function(e) {
+        if (e.target.classList.contains('delete-class-btn')) {
+            e.preventDefault();
+            const classId = e.target.dataset.id;
 
-                const nombreClase = document.getElementById('nombre_clase').value;
-                const fechaInicio = document.getElementById('fecha_inicio').value;
-                const fechaFin = document.getElementById('fecha_fin').value;
-
+            if (confirm('¿Estás seguro de que quieres eliminar esta clase?')) {
                 try {
-                    const response = await fetch('{{ route('clases.store') }}', {
-                        method: 'POST',
+                    const response = await fetch(`/clases/${classId}`, {
+                        method: 'DELETE',
                         headers: {
-                            'Content-Type': 'application/json',
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        },
-                        body: JSON.stringify({
-                            nombre_clase: nombreClase,
-                            fecha_inicio: fechaInicio,
-                            fecha_fin: fechaFin
-                        })
+                        }
                     });
 
                     if (response.ok) {
-                        const nuevaClase = await response.json();
-                        renderClassCard(nuevaClase);
-                        createClassFormContainer.classList.add('hidden');
-                        createClassForm.reset();
-                        initialWelcomeBox.classList.add('hidden');
+                        e.target.closest('.group').remove();
+                        if (classCardsContainer.children.length === 0) {
+                            initialWelcomeBox.classList.remove('hidden');
+                        }
                     } else {
                         const errorData = await response.json();
-                        console.error('Error al guardar la clase:', errorData);
+                        console.error('Error al eliminar la clase:', errorData);
+                        alert('Error al eliminar la clase: ' + (errorData.message || 'Error desconocido'));
                     }
                 } catch (error) {
-                    console.error('Error de red al guardar la clase:', error);
+                    console.error('Error de red al eliminar la clase:', error);
+                    alert('Error de red al eliminar la clase.');
                 }
-            });
-
-            classCardsContainer.addEventListener('click', async function(e) {
-                if (e.target.classList.contains('delete-class-btn')) {
-                    e.preventDefault();
-                    const classId = e.target.dataset.id;
-
-                    if (confirm('¿Estás seguro de que quieres eliminar esta clase?')) {
-                        try {
-                            const response = await fetch(`/clases/${classId}`, {
-                                method: 'DELETE',
-                                headers: {
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                                }
-                            });
-
-                            if (response.ok) {
-                                e.target.closest('.group').remove();
-                                if (classCardsContainer.children.length === 0) {
-                                    initialWelcomeBox.classList.remove('hidden');
-                                }
-                            } else {
-                                const errorData = await response.json();
-                                console.error('Error al eliminar la clase:', errorData);
-                                alert('Error al eliminar la clase: ' + (errorData.message || 'Error desconocido'));
-                            }
-                        } catch (error) {
-                            console.error('Error de red al eliminar la clase:', error);
-                            alert('Error de red al eliminar la clase.');
-                        }
-                    }
-                }
-            });
-        });
-
-
-        document.getElementById('create-class-form').addEventListener('submit', async function(e) {
-    e.preventDefault();
-
-    const nombreClase = document.getElementById('nombre_clase').value;
-    const fechaInicio = document.getElementById('fecha_inicio').value;
-    const fechaFin = document.getElementById('fecha_fin').value;
-
-    try {
-        const response = await fetch('{{ route("clases.store") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify({
-                nombre_clase: nombreClase,
-                fecha_inicio: fechaInicio,
-                fecha_fin: fechaFin
-            })
-        });
-
-        if (response.ok) {
-            const nuevaClase = await response.json();
-            alert('Clase creada con ID: ' + nuevaClase.id);
-            // Aquí puedes agregar código para mostrar la nueva clase en pantalla si quieres
-            this.reset();
-            document.getElementById('create-class-form-container').classList.add('hidden');
-        } else {
-            const errorData = await response.json();
-            alert('Error: ' + (errorData.message || 'No se pudo crear la clase'));
+            }
         }
-    } catch (error) {
-        alert('Error de red: ' + error.message);
-    }
-});
 
-    </script>
+        if (e.target.classList.contains('assign-students-btn')) {
+            const classId = e.target.dataset.id;
+            window.location.href = `{{ url('maestro/asignar-alumno') }}/${classId}`;
+        }
+    });
+});
+</script>
 </x-app-layout>

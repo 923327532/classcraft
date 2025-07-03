@@ -1,90 +1,111 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Imports\StudentsImport;
 use Illuminate\Http\Request;
 use App\Models\Clase;
 use App\Models\Estudiante;
+use Maatwebsite\Excel\Facades\Excel;
+
 use App\Models\Maestro;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
+
 
 class ClaseController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $user = Auth::user();
+        $user = $request->user();
 
-        if ($user->role !== 'estudiante') {
-            if ($user->role === 'maestro') {
-                return redirect()->route('maestro.dashboard')->with('error', 'Los maestros no acceden a esta sección de clases.');
-            }
-            return redirect()->route('dashboard')->with('error', 'Acceso denegado. Solo los estudiantes pueden ver esta sección.');
+        // Obtener maestro relacionado
+        $maestro = $user->maestro;
+        if (!$maestro) {
+            return response()->json([], 200); // O un error si quieres
         }
 
-        if (request()->expectsJson()) {
-            $estudiante = $user->estudiante;
+        // Buscar solo las clases del maestro
+        $clases = Clase::where('id_maestro', $maestro->id_maestro)->get();
 
-            if (!$estudiante) {
-                return response()->json(['message' => 'Estudiante no encontrado.'], 404);
-            }
-
-            $clases = [];
-            if ($estudiante->id_clase) {
-                $claseUnida = Clase::find($estudiante->id_clase);
-                if ($claseUnida) {
-                    $clases[] = $claseUnida;
-                }
-            }
-
-            return response()->json($clases);
-        }
-
-        return view('clases');
+        // Retornar JSON para la vista JS
+        return response()->json($clases);
     }
 
-    public function store(Request $request)
+public function uploadStudentsExcel(Request $request, $id_clase)
 {
-    $user = Auth::user();
+    $request->validate([
+        'file' => 'required|file|mimes:xlsx,xls'
+    ]);
 
-    // Asegurarse que sea un maestro
-    if ($user->role !== 'profesor') {
-        return response()->json(['message' => 'Solo maestros pueden crear clases.'], 403);
+    try {
+        $clase = Clase::findOrFail($id_clase);
+        Excel::import(new StudentsImport($clase->id_clase), $request->file('file'));
+
+        return response()->json(['success' => true, 'message' => 'Import successful']);
+    } catch (\Exception $e) {
+        Log::error('Error importando Excel: ' . $e->getMessage());
+        return response()->json(['success' => false, 'message' => 'Error importando el archivo.']);
+    }
+}
+
+
+
+
+
+
+    public function searchStudentsByCode(Request $request)
+    {
+        $request->validate([
+            'codigo_clase' => 'required|string'
+        ]);
+
+        $clase = Clase::where('codigo_clase', $request->codigo_clase)->with('estudiantes.user')->first();
+
+        if(!$clase){
+            return response()->json(['success' => false, 'message' => 'Clase no encontrada']);
+        }
+
+        return response()->json(['success' => true, 'students' => $clase->estudiantes]);
     }
 
-    $maestro = $user->maestro;
 
-    if (!$maestro) {
-        return response()->json(['message' => 'Maestro no encontrado.'], 404);
-    }
-
-    // Validar datos
-    $validated = $request->validate([
+public function store(Request $request)
+{
+    $request->validate([
         'nombre_clase' => 'required|string|max:255',
         'fecha_inicio' => 'required|date',
         'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
-        'nivel' => 'nullable|string|max:255',
     ]);
 
-    // Agregar ID único y maestro a los datos
-    $validated['id_clase'] = \Illuminate\Support\Str::uuid()->toString();
-    $validated['id_maestro'] = $maestro->id_maestro;
+    $user = $request->user();
+    $maestro = $user->maestro;
+    if (!$maestro) {
+        return response()->json(['message' => 'No tienes perfil de maestro.'], 403);
+    }
 
-    // Crear la clase
-    $clase = Clase::create($validated);
-
-    // Retornar respuesta JSON
-    return response()->json($clase, 201);
+    try {
+        $clase = Clase::create([
+            'nombre_clase' => $request->nombre_clase,
+            'fecha_inicio' => $request->fecha_inicio,
+            'fecha_fin' => $request->fecha_fin,
+            'id_maestro' => $maestro->id_maestro,
+        ]);
+        return response()->json($clase, 201);
+    } catch (\Exception $e) {
+        Log::error('Error creando clase: '.$e->getMessage());
+        return response()->json(['error' => 'Error al crear clase', 'details' => $e->getMessage()], 500);
+    }
 }
-
 
 
     public function destroy($id_clase)
     {
         $user = Auth::user();
-        if ($user->role !== 'maestro') {
-            return response()->json(['message' => 'Acceso denegado. Solo maestros pueden eliminar clases.'], 403);
-        }
+        if ($user->role !== 'profesor') {
+    return response()->json(['message' => 'Acceso denegado. Solo profesores pueden eliminar clases.'], 403);
+}
+
 
         $maestro = $user->maestro;
 

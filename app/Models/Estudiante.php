@@ -8,9 +8,9 @@ use Illuminate\Support\Facades\Storage;
 
 class Estudiante extends Model
 {
-    use HasFactory;
+     use HasFactory;
 
-    protected $primaryKey = 'id_estudiante';
+    protected $primaryKey = 'id_estudiante';  // Big increments en migración
 
     protected $fillable = [
         'user_id',

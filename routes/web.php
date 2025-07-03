@@ -16,15 +16,7 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    $user = auth()->user();
-
-    if ($user->esMaestro()) {
-        return redirect()->route('maestro.dashboard');
-    } elseif ($user->esEstudiante()) {
-        return redirect()->route('estudiante.dashboard');
-    }
-
-    return view('home'); // o dashboard general
+    return view('estudiante.home'); // ✅ Esto está bien
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 
@@ -122,5 +114,8 @@ Route::middleware(['auth'])->group(function () {
 
 
 Route::post('/clases', [ClaseController::class, 'store'])->name('clases.store');
+// web.php o api.php
+Route::post('/maestro/clases/{id_clase}/upload-students', [ClaseController::class, 'uploadStudentsExcel'])->name('clases.uploadStudentsExcel');
+Route::post('/maestro/clases/search-students', [ClaseController::class, 'searchStudentsByCode'])->name('clases.searchStudentsByCode');
 
 require __DIR__.'/auth.php';

@@ -9,9 +9,9 @@ class Clase extends Model
 {
     use HasFactory;
 
-    protected $primaryKey = 'id_clase';
-    public $incrementing = false;
-    protected $keyType = 'string';
+     protected $primaryKey = 'id_clase';
+    public $incrementing = true;  // Cambiar a true porque en migración usas $table->id('id_clase') que es autoincrement
+    protected $keyType = 'int';   // Cambiar a int porque es BIGINT autoincrement en BD
     
 
     protected $fillable = [

@@ -119,6 +119,12 @@
                 @if (Route::has('login'))
                     @auth
                         <a href="{{ url('/dashboard') }}" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition duration-300 transform hover:scale-105">Dashboard</a>
+                        @auth
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="px-4 py-2 text-white bg-red-500 rounded">Cerrar sesión</button>
+                            </form>
+                        @endauth
                     @else
                         <a href="{{ route('login') }}" class="px-5 py-2.5 border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white font-semibold rounded-lg shadow-md transition duration-300 transform hover:scale-105">Iniciar Sesión</a>
                         @if (Route::has('register'))

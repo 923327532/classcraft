@@ -1,5 +1,6 @@
 <x-app-layout>
-    <div class="flex flex-col h-screen bg-gray-100">
+    <div class="flex flex-col h-screen bg-teal-100">
+
         <header class="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200">
             <div class="flex items-center">
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">
@@ -7,7 +8,7 @@
                 </h2>
             </div>
             <div class="flex items-center">
-                <a href="{{ route('maestro.dashboard') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200 font-medium">
+            <a href="{{ route('maestro.dashboard') }}#" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200 font-medium">
                     Volver
                 </a>
             </div>
@@ -15,7 +16,9 @@
 
         <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50">
             <div class="container mx-auto px-6 py-8">
-                <div class="bg-white p-8 rounded-xl shadow-lg border border-blue-200 mb-8">
+                <div class="bg-[#e0f7f4] p-8 rounded-xl shadow-lg border border-blue-200 mb-8">
+
+
                     <h3 class="text-2xl font-bold text-gray-800 mb-4">Clase ID: <span id="class-id-display" class="text-blue-600">{{ $clase->id_clase }}</span></h3>
                     <div class="flex items-center space-x-4">
                         <input type="email" id="student-email-search" placeholder="Buscar alumno por correo electrónico" class="w-full px-4 py-3 text-gray-700 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
@@ -26,7 +29,7 @@
                 </div>
 
                 <div id="search-results-container" class="bg-white p-8 rounded-xl shadow-lg border border-gray-200 hidden mb-8">
-                    <h4 class="text-xl font-bold text-gray-800 mb-4">Resultados de la búsqueda:</h4>
+                    <h4 class="text-xl font-bold text-yellow-800 mb-4">Resultados de la búsqueda:</h4>
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
@@ -107,147 +110,103 @@
             </div>
         </main>
     </div>
+   
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const classIdDisplay = document.getElementById('class-id-display');
-            const studentEmailSearch = document.getElementById('student-email-search');
-            const searchStudentBtn = document.getElementById('search-student-btn');
-            const searchResultsContainer = document.getElementById('search-results-container');
-            const studentsTableBody = document.getElementById('students-table-body');
-            const noResultsMessage = document.getElementById('no-results-message');
-            const messageBox = document.getElementById('message-box');
+<form id="upload-excel-form" enctype="multipart/form-data">
+    @csrf
+    <input type="file" name="file" id="input-excel" accept=".xlsx,.xls" />
+    <button type="submit" id="upload-excel-btn" class="px-4 py-2 bg-blue-600 text-white rounded">Subir Excel</button>
+</form>
 
-            const classId = classIdDisplay.textContent;
+<div id="upload-message" class="mt-2 text-center text-sm"></div>
 
-            function showMessage(message, type = 'success') {
-                messageBox.textContent = message;
-                messageBox.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white`;
-                messageBox.classList.remove('hidden');
-                setTimeout(() => {
-                    messageBox.classList.add('hidden');
-                }, 3000);
-            }
+<script>
+document.getElementById('upload-excel-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
 
-            searchStudentBtn.addEventListener('click', async function() {
-                const email = studentEmailSearch.value.trim();
-                if (!email) {
-                    showMessage('Por favor, introduce un correo electrónico para buscar.', 'error');
-                    return;
-                }
+    const fileInput = document.getElementById('input-excel');
+    const uploadBtn = document.getElementById('upload-excel-btn');
+    const uploadMessage = document.getElementById('upload-message');
+    uploadMessage.textContent = '';
+    uploadMessage.className = 'mt-2 text-center text-sm';
 
-                studentsTableBody.innerHTML = '';
-                noResultsMessage.classList.add('hidden');
-                searchResultsContainer.classList.add('hidden');
+    if (!fileInput.files.length) {
+        uploadMessage.textContent = 'Selecciona un archivo Excel';
+        uploadMessage.classList.add('text-red-600');
+        return;
+    }
 
-                try {
-                    const response = await fetch('{{ route('api.students.search') }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        },
-                        body: JSON.stringify({ email: email })
-                    });
-                    const data = await response.json();
+    const file = fileInput.files[0];
 
-                    if (data.students && data.students.length > 0) {
-                        searchResultsContainer.classList.remove('hidden');
-                        data.students.forEach(student => {
-                            const row = document.createElement('tr');
-                            row.className = 'hover:bg-gray-100';
-                            const isAlreadyInClass = student.current_class_id === classId;
-                            row.innerHTML = `
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${student.name}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${student.email}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${student.clase_personaje ? student.clase_personaje.charAt(0).toUpperCase() + student.clase_personaje.slice(1) : 'No Asignado'}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <button data-student-id="${student.id_estudiante}" class="add-to-class-btn px-4 py-2 text-xs ${isAlreadyInClass ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'} text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition-all duration-200" ${isAlreadyInClass ? 'disabled' : ''}>
-                                        ${isAlreadyInClass ? 'Ya en Clase' : 'Agregar a la clase'}
-                                    </button>
-                                </td>
-                            `;
-                            studentsTableBody.appendChild(row);
-                        });
-                    } else {
-                        noResultsMessage.classList.remove('hidden');
-                        searchResultsContainer.classList.remove('hidden');
-                    }
+    // Validar extensión
+    const allowedExtensions = ['xlsx', 'xls'];
+    const fileExtension = file.name.split('.').pop().toLowerCase();
+    if (!allowedExtensions.includes(fileExtension)) {
+        uploadMessage.textContent = 'Solo se permiten archivos Excel (.xlsx, .xls)';
+        uploadMessage.classList.add('text-red-600');
+        return;
+    }
 
-                } catch (error) {
-                    console.error('Error al buscar alumnos:', error);
-                    showMessage('Error al buscar alumnos. Inténtalo de nuevo.', 'error');
-                }
-            });
+    // Validar tamaño máximo (por ejemplo 5MB)
+    const maxSizeMB = 5;
+    if (file.size > maxSizeMB * 1024 * 1024) {
+        uploadMessage.textContent = `El archivo debe ser menor a ${maxSizeMB} MB`;
+        uploadMessage.classList.add('text-red-600');
+        return;
+    }
 
-            studentsTableBody.addEventListener('click', async function(e) {
-                if (e.target.classList.contains('add-to-class-btn')) {
-                    const studentId = e.target.dataset.studentId;
-                    
-                    try {
-                        const response = await fetch(`{{ url('api/classes') }}/${classId}/add-student`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                            },
-                            body: JSON.stringify({ student_id: studentId })
-                        });
-                        const result = await response.json();
+    const formData = new FormData();
+    formData.append('file', file);
 
-                        if (result.success) {
-                            showMessage(result.message);
-                            e.target.disabled = true;
-                            e.target.textContent = 'Agregado';
-                            e.target.classList.remove('bg-green-500', 'hover:bg-green-600');
-                            e.target.classList.add('bg-gray-400', 'cursor-not-allowed');
+    // Tomar token CSRF del meta tag para mayor seguridad
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    formData.append('_token', csrfToken);
 
-                            // Recargar la lista de alumnos unidos a la clase
-                            setTimeout(() => {
-                                window.location.reload();
-                            }, 1000); // Recargar después de un breve retraso para que el mensaje sea visible
-                        } else {
-                            showMessage(result.message || 'Error al agregar alumno a la clase.', 'error');
-                        }
+    // Deshabilitar botón mientras sube
+    uploadBtn.disabled = true;
+    uploadBtn.textContent = 'Subiendo...';
 
-                    } catch (error) {
-                        console.error('Error de red al agregar alumno:', error);
-                        showMessage('Error de red al agregar alumno a la clase.', 'error');
-                    }
-                }
-            });
+    try {
+        const classId = '{{ $clase->id_clase }}';
 
-            document.querySelectorAll('.remove-student-btn').forEach(button => {
-                button.addEventListener('click', async function() {
-                    const studentId = this.dataset.studentId;
-                    const classId = this.dataset.classId;
-
-                    if (confirm('¿Estás seguro de que quieres remover a este alumno de la clase?')) {
-                        try {
-                            const response = await fetch(`{{ url('api/classes') }}/${classId}/remove-student`, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                                },
-                                body: JSON.stringify({ student_id: studentId })
-                            });
-
-                            const data = await response.json();
-
-                            if (data.success) {
-                                showMessage(data.message, 'success');
-                                document.getElementById(`student-row-${studentId}`).remove();
-                            } else {
-                                showMessage(data.message || 'Error al remover al alumno.', 'error');
-                            }
-                        } catch (error) {
-                            console.error('Error de red al remover alumno:', error);
-                            showMessage('Error de red al remover al alumno.', 'error');
-                        }
-                    }
-                });
-            });
+        const response = await fetch(`/maestro/clases/${classId}/upload-students`, {
+            method: 'POST',
+            body: formData,
+            credentials: 'same-origin'
         });
-    </script>
+
+        if (!response.ok) {
+            throw new Error('Error en la respuesta del servidor');
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+            uploadMessage.textContent = data.message || 'Archivo subido correctamente.';
+            uploadMessage.classList.add('text-green-600');
+            // Opcional: limpiar input
+            fileInput.value = '';
+
+            // Actualizar lista alumnos sin recargar (si tienes función)
+            // o recargar después de delay
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+
+        } else {
+            uploadMessage.textContent = data.message || 'Error al subir archivo.';
+            uploadMessage.classList.add('text-red-600');
+        }
+
+    } catch (error) {
+        console.error('Error en la subida:', error);
+        uploadMessage.textContent = 'Error en la conexión o en el servidor.';
+        uploadMessage.classList.add('text-red-600');
+    } finally {
+        uploadBtn.disabled = false;
+        uploadBtn.textContent = 'Subir Excel';
+    }
+});
+</script>
+
 </x-app-layout>

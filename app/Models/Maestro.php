@@ -6,11 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class Maestro extends Model
 {
+    
     protected $table = 'maestros';
+    protected $primaryKey = 'id_maestro';
+    public $incrementing = true;  // Sí autoincrementa en migración
+    protected $keyType = 'int';   // Por defecto int para bigIncrements
 
-    protected $primaryKey = 'id_maestro'; 
-    public $incrementing = true; 
-    public $timestamps = true; 
+    public $timestamps = true;    // Por defecto true, está bien
 
     protected $fillable = [
         'user_id',

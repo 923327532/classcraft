@@ -11,9 +11,23 @@ use Illuminate\Support\Facades\Auth;
 class MaestroController extends Controller
 {
     public function index()
-    {
-        return view('maestro.dashboard');
+{
+    $user = auth()->user();
+
+    // Obtener el maestro relacionado al usuario
+    $maestro = $user->maestro;
+
+    if (!$maestro) {
+        // No encontró el maestro, quizá mostrar un mensaje o error
+        return redirect()->route('dashboard')->with('error', 'No se encontró perfil de maestro para este usuario.');
     }
+
+    // Buscar clases del maestro con su id_maestro
+    $clases = Clase::where('id_maestro', $maestro->id_maestro)->get();
+
+    return view('maestro.dashboard', compact('clases'));
+}
+
 
     public function asignarAlumnoView($id_clase)
     {

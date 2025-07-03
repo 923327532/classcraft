@@ -72,39 +72,50 @@ class JuegoController extends Controller
     }
 
     public function guardarPersonaje(Request $request)
-    {
-        $request->validate([
-            'clase_personaje' => 'required|string',
-        ]);
+{
+    $request->validate([
+        'clase_personaje' => 'required|string',
+    ]);
 
-        $user = Auth::user();
-        $estudiante = $user->estudiante;
-
-        if (!$estudiante) {
-            $nivel1 = Nivel::where('numero_nivel', 1)->firstOrCreate(['numero_nivel' => 1], ['xp_requerida' => 0]);
-            $estudiante = Estudiante::create([
-                'user_id' => $user->id,
-                'clase_personaje' => ucfirst($request->input('clase_personaje')),
-                'nivel_id' => $nivel1->id,
-                'puntos_experiencia' => 0,
-                'puntos_vida' => 100,
-                'puntos_accion' => 50,
-                'puntos_oro' => 10,
-            ]);
-        }
-
-        if (empty($estudiante->clase_personaje)) {
-            $estudiante->clase_personaje = ucfirst($request->input('clase_personaje'));
-            $estudiante->puntos_experiencia += 10;
-            $estudiante->save();
-            return response()->json([
-                'message' => 'Personaje seleccionado con éxito y has ganado 10 XP!',
-                'redirect_to' => route('confirmacion.personaje', ['personaje' => $estudiante->clase_personaje])
-            ]);
-        } else {
-            return response()->json(['message' => 'Ya tienes un personaje seleccionado.'], 400);
-        }
+    $user = Auth::user();
+    if (!$user) {
+        return response()->json(['message' => 'Usuario no autenticado.'], 401);
     }
+
+    $clase = ucfirst($request->input('clase_personaje'));
+    $estudiante = $user->estudiante;
+
+    $nivel1 = Nivel::where('numero_nivel', 1)->firstOrCreate(['numero_nivel' => 1], ['xp_requerida' => 0]);
+
+    if (!$estudiante) {
+        // Crear estudiante nuevo
+        $estudiante = Estudiante::create([
+            'user_id' => $user->id,
+            'clase_personaje' => $clase,
+            'nivel_id' => $nivel1->id,
+            'puntos_experiencia' => 0,
+            'puntos_vida' => 100,
+            'puntos_accion' => 50,
+            'puntos_oro' => 10,
+        ]);
+    } else {
+        // Actualizar estudiante con nuevo personaje (si quieres permitir cambio)
+        $estudiante->clase_personaje = $clase;
+        $estudiante->nivel_id = $nivel1->id;
+        $estudiante->puntos_experiencia = 0;  // O sumar experiencia?
+        $estudiante->puntos_vida = 100;
+        $estudiante->puntos_accion = 50;
+        $estudiante->puntos_oro = 10;
+        $estudiante->save();
+    }
+
+    return response()->json([
+        'message' => 'Personaje seleccionado y guardado con éxito.',
+        'redirect_to' => route('confirmacion.personaje', ['personaje' => $clase]),
+    ]);
+}
+
+    
 
     public function guardarPoderSeleccionado(Request $request)
     {
